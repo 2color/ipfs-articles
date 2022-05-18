@@ -1,5 +1,6 @@
 # Break on Through with IPFS HTTP Gateways
 
+<!--
 ## Outline
 
 - What is IPFS?
@@ -23,9 +24,7 @@
   - Fetching data from the network
     - How to use IPFS gateways
     - Public gateways
-  - Resolution styles
-
-## Intro
+  - Resolution styles -->
 
 The Interplanetary File System (IPFS) is a peer-to-peer protocol for storing and accessing files and websites. As distributed **peer-to-peer** protocol, it's fundamentally different from the HTTP protocol that forms the foundation for the internet.
 
@@ -146,22 +145,29 @@ You can find public gateway operators in the [public gateway checker](https://ip
 
 ### Example fetching an image from a gateway
 
-Let's take a look at what using an IPFS gateway looks like in practice, drawing on the example with the image of Astronaut Jessica Watkins. 
+Let's take a look at what using an IPFS gateway looks like in practice, drawing on the example with the image of Astronaut Jessica Watkins.
 
 The image which was originally hosted on the NASA servers has been uploaded to the IPFS network, the corresponding CID for the image is `QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2`
 
 To fetch the image try one of the following links:
+
 - https://ipfs.io/ipfs/QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2
 - https://cloudflare-ipfs.com/ipfs/QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2
-
-
+  dmin1$mac
 
 ### Resolution style
 
-- path (not recommended for websites relying on the same origin policy )
+- path
+  - Useful for individual files/images (not recommended for websites relying on the same-origin policy )
 - subdomain
-
+  - useful for full websites
 
 ### How do I ensure that CIDs I care about are available?
 
 - Difference between a gateway and pinning service
+
+## CTAs
+
+- Try pinning services
+- Run a node
+-
