@@ -27,13 +27,17 @@
 
 ## Intro
 
-The Interplanetary File System (IPFS) is a peer-to-peer protocol for storing and accessing files and websites. IPFS is a distributed **peer-to-peer** protocol making it fundamentally different from the HTTP protocol that forms the foundation for the internet.
+The Interplanetary File System (IPFS) is a peer-to-peer protocol for storing and accessing files and websites. As distributed **peer-to-peer** protocol, it's fundamentally different from the HTTP protocol that forms the foundation for the internet.
 
-Since IPFS is a relatively new protocol compared to HTTP, native browser support for the protocol is still limited ([Brave](https://brave.com/ipfs-support/) supports it). The good news is that with the help of IPFS HTTP gateways, you can tap into the IPFS network directly from any browser.
+<!-- Because files are at the heart of the internet and the internet is at the heart of everything, the potential use cases for IPFS are endless. -->
 
-This blog post will give a brief overview of the core concepts of the IPFS protocol, discuss the relationship between IPFS and HTTP, the role of IPFS gateways, and demonstrate how you can consume data from the IPFS network using HTTP without running any IPFS infrastructure.
+IPFS is a relatively new protocol compared to the time-honored HTTP protocol and isn't feasible for use in every scenario. The good news is that with the help of IPFS HTTP gateways, you can tap into the IPFS network directly from any browser.
 
-If you're already familiar with the concepts of IPFS and would like to learn how to use IPFS gateways feel free to skip ahead to the [practical guide](#TODO).
+This blog post will give an overview of the core concepts of the IPFS protocol, discuss the relationship between IPFS and HTTP(S), the role of IPFS gateways, and demonstrate how you can consume data from the IPFS network using HTTP without running any IPFS infrastructure.
+
+If you're already familiar with the concepts of IPFS and would like to learn how to use IPFS gateways feel free to skip ahead to the [practical example](#TODO) section.
+
+> Note: The blog post uses HTTP to refer to both HTTP and HTTPS for brevity and assumes that HTTPS should be used in every production application.
 
 ## The challenges with the client-server model
 
@@ -66,7 +70,7 @@ One of the core characteristics of the IPFS is that it is a peer-to-peer network
 
 As illustrated in the diagram, instead of relying on a single server at the center of the network that clients connect to, each peer connects to multiple peers. Since the `jpg` file is stored on three of the peers, two of those three nodes can be down and the file will still be accessible to the network. What's more, any number of peers become a provider for the `jpg` file, once they download it from the network.
 
-In summary, with IPFS, peers (computers running the IPFS software) pool their resources, e.g., internet connection and disk space, and ensure that the availability of files is **resilient** and **decentralized**.
+In summary, with IPFS, nodes pool their resources, e.g., internet connection and disk space, and ensure that the availability of files is **resilient** and **decentralized**.
 
 ## Location addressing vs. content addressing
 
@@ -84,33 +88,80 @@ The challenges with location addressing are numerous. We've all had the experien
 
 In a peer-to-peer network like IPFS, a given file might be hosted on a number of the IPFS nodes.
 
-This is where content addressing comes in handy. With IPFS, every single file stored in the system is addressed by a cryptographic hash of its contents known as a **Content Identifier** or **CID**. The CID is a long string of letters and numbers that is unique to that file.
+This is where _content addressing_ comes in handy. With IPFS, every single file stored in the system is addressed by a cryptographic hash of its contents known as a **Content Identifier** or **CID**. The CID is a long string of letters and numbers that is unique to that file.
 
-There are two crucial things to remember with regards to CIDs:
+There are three crucial things to remember with regards to CIDs:
 
-- Any difference in the content will produce a different CID.
+- Any difference (even a single bit) to the file will produce a different CID. This property is known as immutability.
 - The same content added to two different IPFS nodes will produce the same CID.
+- A single CID can represent a single file or a folder of files, e.g. a static website. This property is known as "turtles all the way down".
 
 ![Content addressing](./content-addressing.png)
 
-The diagram illustrates what two different files look like on the network. The red jpeg represents one CID (`QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2`) hosted on two nodes, and the purple jpeg represents a different CID hosted on two other nodes.
+The diagram illustrates what two different files look like on the network. The red jpeg represents one CID hosted on two nodes, while the purple jpeg represents a different CID hosted on two other nodes.
 
-One of the main benefits of content addressing is that you can retrieve a CID from any IPFS node as long as there's at least one node providing it to the network. So any one of the nodes could be asked for the red CID
+> **Note:** Depending on the size, IPFS may chunk (split) a single file into multiple blocks each with a CID of their own for efficiency reasons. Even so, the file will also have root CID. You can explore what this looks like for the NASA image using the [IPLD explorer](https://explore.ipld.io/#/explore/QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2).
 
-> **Note:** Depending on the size, IPFS may split a single file into multiple blocks each with a CID of their own for efficiency reasons. Even so, the file will also have root CID. You can explore what this looks like for the NASA image using the [IPLD explorer](https://explore.ipld.io/#/explore/QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2).
+### You can ask any IPFS node for a CID
 
-## Finding files in IPFS using content addressing
+One of the benefits of content addressing is that you can retrieve a CID from any IPFS node as long as there's at least one node providing it to the network. This means that any one of the IPFS nodes could be asked for a CID; if the node doesn't have it, it can ask its peers and retrieve it on your behalf.
 
-In IPFS, files are retrieved
+<!-- ## Finding files in IPFS using content addressing -->
 
-Using a peer-to-peer network has a lot of benefits discussed above, but it leaves the question of how files are found and retrieved. This is where the concept of [**content-addressing**](https://docs.ipfs.io/concepts/content-addressing/) comes in.
+## Speaking IPFS
 
-Content addressing is
+Now that we’ve covered the core concepts of IPFS, it's important to note that IPFS is a set of open-source protocols, specifications, and software implementations.
 
-In the client-server model, we rely on _location-addressing_ to retrieve files – URLs that point to a path on a server.
+So how do you use IPFS to access files in real-world applications?
 
-<!-- The core idea is that instead of just speaking to a single server that can be prone to network unreachability and downtime, you are connected to multiple IPFS network nodes. -->
+There are two prominent ways to fetch files stored in the IPFS network:
 
-## So why do we need gateways?
+- Running an IPFS node by installing one of the IPFS implementations as a daemon (long-running process) on your computer which becomes a member of the IPFS peer-to-peer network and announces what data it’s holding and responding to requests for data.
+- Using an **IPFS Gateway** which allows fetching CIDs using the HTTP protocol.
 
-As mentioned in the beginning, browsers today mainly support the HTTP protocol. Introducing new protocols to browsers can be a lengthy process
+The first option allows you to _speak the IPFS protocol_ while the latter serves as a bridge in situations where you might be constrained to using HTTP. Choosing the right approach depends on your use case.
+
+## What are IPFS gateways?
+
+IPFS gateways are public services that translate between _Web2_ and _Web3_ thereby providing a bridge between HTTP and IPFS.
+
+They allow you to use the HTTP protocol –which almost every programming language is capable of– to request a CID from the IPFS network, fetch it, and use HTTP to send the data back.
+
+In its simplest form, a gateway is an IPFS node that also accepts HTTP connections in addition to speaking the IPFS protocol to participate in the peer-to-peer network. In fact, most IPFS implementations can also work as a gateway.
+
+![Any IPFS node can also be a gateway](./browser-gateway.png)
+
+To use an IPFS gateway, you need to know two things:
+
+- The address of the gateway, e.g. `https://ipfs.io/ipfs/[CID]`
+- The CID (Content Identifier), e.g. `QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2`
+
+You can find public gateway operators in the [public gateway checker](https://ipfs.github.io/public-gateway-checker/) and check whether they are online and the latency from your location.
+
+<!-- needed because it's common for many internet access is common on a spectrum of devices ranging from resource-constrained IoT devices to powerful servers. -->
+
+<!-- Some browsers such as Brave and [Opera](https://blogs.opera.com/tips-and-tricks/2021/02/opera-crypto-files-for-keeps-ipfs-unstoppable-domains/) and introducing new protocols to browsers can be a lengthy process. This is where IPFS Gateways come in handy. -->
+
+## How to use IPFS gateways?
+
+### Example fetching an image from a gateway
+
+Let's take a look at what using an IPFS gateway looks like in practice, drawing on the example with the image of Astronaut Jessica Watkins. 
+
+The image which was originally hosted on the NASA servers has been uploaded to the IPFS network, the corresponding CID for the image is `QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2`
+
+To fetch the image try one of the following links:
+- https://ipfs.io/ipfs/QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2
+- https://cloudflare-ipfs.com/ipfs/QmRKs2ZfuwvmZA3QAWmCqrGUjV9pxtBUDP3wuc6iVGnjA2
+
+
+
+### Resolution style
+
+- path (not recommended for websites relying on the same origin policy )
+- subdomain
+
+
+### How do I ensure that CIDs I care about are available?
+
+- Difference between a gateway and pinning service
