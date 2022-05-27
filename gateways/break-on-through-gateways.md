@@ -76,7 +76,7 @@ Moreover, the HTTP protocol does not specify a way to **ask other servers** for 
 
 One of the core characteristics of the IPFS is that it is a peer-to-peer network. In contrast to the client-server model where you typically have many clients consuming from a single server, with the peer-to-peer model, every computer (typically referred to as a _peer_) in the IPFS network wears both the hat of a server and a client. This means that every IPFS peer can become a productive member of the network.
 
-![client-server compared with peer-to-peer](https://cloudflare-ipfs.com/ipfs/bafybeiho4jont2vresctmrlec4zi7lawxfehbaut2b3kwsgiez7wug6lr4/http-vs-ipfs.png)
+![client-server compared with peer-to-peer](./http-vs-ipfs.png)
 
 > Note: The article uses the terms **peer** and **node** interchangeably to refer to computers running the IPFS software.
 
@@ -94,7 +94,7 @@ In the example with the image loaded from NASA, we used location addressing to f
 - _hostname_: DNS name `www.nasa.gov` mapped to an IP address of the server.
 - _path_ to the location on the server: `/sites/default/files/thumbnails/image/04_iss067e033423.jpg`
 
-![location addressing](https://i.imgur.com/YKE6bRS.png)
+![location addressing](./location-addressing.png)
 
 The challenges with location addressing are numerous. We've all had the experience of going down an internet rabbit hole only to be abrupted by dead links because the link changed or the server is no longer hosting the files.
 
@@ -141,7 +141,7 @@ They allow you to use the HTTP protocol –which almost every programming langua
 
 In its simplest form, a gateway is an IPFS node that also accepts HTTP requests for CIDs in addition to speaking the IPFS protocol to participate in the peer-to-peer network. Most IPFS implementations can also work as a gateway.
 
-![Any IPFS node can also be a gateway](https://cloudflare-ipfs.com/ipfs/bafybeibezzvuhqwzz47yv4cg2hvyevuekcjr4uv7txp3frb5e44cr2bl2i/browser-gateway.png)
+![Any IPFS node can also be a gateway](./browser-gateway.png)
 
 <!-- Some browsers such as Brave and [Opera](https://blogs.opera.com/tips-and-tricks/2021/02/opera-crypto-files-for-keeps-ipfs-unstoppable-domains/) and introducing new protocols to browsers can be a lengthy process. This is where IPFS Gateways come in handy. -->
 
