@@ -106,7 +106,7 @@ There are three crucial things to remember with regards to CIDs:
 
 - Any difference –even a single bit– to the file (or file tree in the case of a folder) will produce a different CID. This property is known as **immutability**.
 - The same content added to two different IPFS nodes will produce the same CID (given the same parameters).
-- A single CID can represent a single file or a folder of files, e.g. a static website. This property is known as "turtles all the way down".
+- A single CID can represent a single file or a folder of files, e.g. a static website. This property is known as "[turtles all the way down](https://en.wikipedia.org/wiki/Turtles_all_the_way_down)".
 
 ![Content addressing](./content-addressing.png)
 
