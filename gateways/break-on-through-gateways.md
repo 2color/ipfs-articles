@@ -224,7 +224,7 @@ This is why requesting a CID for the first time from a gateway can take time whi
 
 Drawing on the principles laid out above, it's sensible to pin your CIDs to multiple IPFS nodes to ensure reliable availability and fast fetching. These can be either IPFS nodes that you are operating or pinning services like [Web3.storage](https://web3.storage/), [Pinata](https://www.pinata.cloud/), and [Infura](https://infura.io/product/ipfs).
 
-To make pinning easier, there's a [Pinning Service API Spec](https://ipfs.github.io/pinning-services-api-spec/) that is already supported by IPFS node implementations, client libraries, and pinning services. Using this spec, you can implement pinning to multiple services as part of your workflow for uploading immutable data to IPFS.
+To make pinning easier, there's a vendor-agnostic [Pinning Service OpenAPI Specification](https://ipfs.github.io/pinning-services-api-spec/) that is [already supported by many IPFS node implementations, client libraries, and existing pinning services](https://github.com/ipfs/pinning-services-api-spec#adoption). Using this remote pinning API, you can [implement pinning to multiple services](https://docs.ipfs.io/how-to/work-with-pinning-services/#use-an-existing-pinning-service) as part of your workflow for uploading immutable data to IPFS.
 
 Note that pinning is not the same as adding the CID to the IPFS network. For pinning to work, the CID has to first be added to a reachable IPFS node connected to the network so that the pinning services can replicate the CID. All of the pinning services also offer an API for uploading a file that returns the CID.
 
