@@ -226,7 +226,7 @@ Drawing on the principles laid out above, it's sensible to pin your CIDs to mult
 
 To make pinning easier, there's a vendor-agnostic [Pinning Service OpenAPI Specification](https://ipfs.github.io/pinning-services-api-spec/) that is [already supported by many IPFS node implementations, client libraries, and existing pinning services](https://github.com/ipfs/pinning-services-api-spec#adoption). Using this remote pinning API, you can [implement pinning to multiple services](https://docs.ipfs.io/how-to/work-with-pinning-services/#use-an-existing-pinning-service) as part of your workflow for uploading immutable data to IPFS.
 
-Note that pinning is not the same as adding the CID to the IPFS network. For pinning to work, the CID has to first be added to a reachable IPFS node connected to the network so that the pinning services can replicate the CID. All of the pinning services also offer an API for uploading a file that returns the CID.
+Note that pinning is not the same as adding the CID to the IPFS network. For pinning to work, the CID has to first be added to a reachable IPFS node connected to the network so that the pinning services can replicate the CID. As a convenience, most of the pinning services also offer an API for uploading a file that returns the CID.
 
 If you're not running an IPFS node, you can start by uploading a file to one service and then using the returned CID to pin it to other services.
 
