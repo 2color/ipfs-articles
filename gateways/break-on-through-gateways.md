@@ -249,9 +249,9 @@ Practically speaking, this can be implemented using several approaches depending
 
 <!-- ### Tip 3: Make use of the  and etag headers -->
 
-### Tips if you're running an IPFS node
+### Tips if you're running your own HTTP gateway
 
-- Explicitly peer with the pinning services that you use and public gateways
+- Set up [peering](https://github.com/ipfs/go-ipfs/blob/master/docs/config.md#peering) with the pinning services that store your data
 - Ensure that you are correctly returning HTTP cache headers to the client if the node is behind a reverse-proxy
 - Put a CDN like Cloudflare in front to reduce load on the IPFS node
 
