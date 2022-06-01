@@ -202,7 +202,7 @@ Given the decentralized nature of IPFS, improving the reliability and request la
 - The number of IPFS nodes **pinning** the CID.
 - Is there a [CDN](https://en.wikipedia.org/wiki/Content_delivery_network) in front of the IPFS gateway?
 - The network distance (round-trip time) between the requester and the IPFS gateway.
-- HTTP Cache headers
+- [HTTP Cache](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching) headers
 
 Taking all these into consideration makes it hard to give generic advice. Nonetheless, understanding the factors influencing the performance can help you navigate the space of potential solutions.
 
