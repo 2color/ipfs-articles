@@ -212,7 +212,7 @@ Some are these factors are within your control. The section below will cover som
 
 As mentioned earlier, an IPFS gateway in its simplest form is an IPFS node with its HTTP gateway port open. When you request a CID, it will be returned quickly if the IPFS node has the CID cached or pinned. If not, it has to search the network.
 
-IPFS has a fairly aggressive caching mechanism that will keep an object local for a short time after the node has fetched it from the network, but these objects may get garbage-collected regularly.
+Existing IPFS [implementations](https://ipfs.io/#install) have a fairly aggressive caching mechanism that will keep an object local for a short time after the node has fetched it from the network, but these objects may get garbage-collected regularly, especially when a public gateway is used.
 
 Pinning is the mechanism that allows you to tell IPFS to **always** store a given CID — by the default on your local node. In addition to local pinning, you can also pin your CIDs to [remote pinning services](https://docs.ipfs.io/how-to/work-with-pinning-services/).
 
