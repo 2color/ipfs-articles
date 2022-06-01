@@ -141,7 +141,7 @@ They allow you to use the HTTP protocol –which almost every programming langua
 
 In its simplest form, a gateway is an IPFS node that also accepts HTTP requests for CIDs in addition to speaking the IPFS protocol to participate in the peer-to-peer network. Most IPFS implementations can also work as a gateway.
 
-![Any IPFS node can also be a gateway](./browser-gateway.png)
+![Some IPFS nodes can also be a gateway](./browser-gateway.png)
 
 <!-- Some browsers such as Brave and [Opera](https://blogs.opera.com/tips-and-tricks/2021/02/opera-crypto-files-for-keeps-ipfs-unstoppable-domains/) and introducing new protocols to browsers can be a lengthy process. This is where IPFS Gateways come in handy. -->
 
