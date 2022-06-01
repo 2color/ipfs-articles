@@ -236,7 +236,9 @@ Imagine the following scenario: you deploy your web app to IPFS which contains m
 
 You may be able to reach your app using a different gateway, but since the web app's content is immutable, the image pointing to the Infura IPFS gateway which is down will not load.
 
-For this reason, it's sensible to use a domain within your control to route HTTP traffic to a gateway. This approach potentially gives you the flexibility to implement additional performance optimizations.
+Also, you may also want to only host specific CIDs, such as data uploaded by your users, deny serving HTML websites, or block fetching any third party content in general.
+
+For these reasons, it's sensible to use a domain within your control to route HTTP traffic to a gateway. This approach potentially gives you the flexibility to implement additional performance optimizations.
 
 Practically speaking, this can be implemented using several approaches depending on your willingness to run infrastructure:
 
