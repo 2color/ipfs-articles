@@ -1,53 +1,15 @@
-# Break on Through with IPFS HTTP Gateways
+# Break on Through with IPFS HTTP Gateways - Part 1
 
-<!--
+The Interplanetary File System (IPFS) is a peer-to-peer protocol for storing and accessing **files and websites**. As a decentralized **peer-to-peer** protocol, it's fundamentally different from the HTTP protocol that forms the foundation for the internet.
 
-Developers fetching data [that they have stored] from IPFS.
-Not necessarily operating an IPFS node — consider the situations where they’ve chosen to use Web3.storage or Pinata.
+IPFS is a relatively new protocol compared to the time-honored HTTP protocol and comes with a different set of trade-offs. The goal of this blog post series is to help you understand the core concepts behind IPFS and introduce IPFS HTTP gateways, which help you reap many of the benefits of the IPFS network using HTTP.
 
-- The "any node can also be a gateway" diagram is particularly good!
-- Direction wise I think what our community members have been asking for is a bit more in-depth on
-- using & optimising gateways in production situations. For this piece we could slim down the pure intro a bit (and maybe save for a separate piece).
+This blog post is the first of a two-part series:
 
-- Would it be useful to run a dedicated gateway to avoid having such errors ? or is there some other service that I can use (that you recommend) to work with IPFS. Something like PINATA (edited)
+- Part one: You will learn about the challenges with the popular client-server model, how IPFS approaches these challenges with peer-to-peer networking and content addressing, the relationship between IPFS and HTTP(S), and finally a brief introduction to IPFS HTTP gateways.
+- Part two: You will learn practical tips for using IPFS gateways in real-world applications, for example, improving CID access performance and reliability from the IPFS network, IPFS gateway resolution styles, caching, pinning, pinning services, integration with DNS, and running your own IPFS nodes and gateways.
 
-
- -->
-
-<!-- ## Outline
-
-- What is IPFS?
-  - Definition
-  - Concepts
-    - CID
-    - Peer to peer
-    - Resilience - can’t be shut down
-    - Easier caching with CID
-  - Use-cases
-    - Reading public data, e.g. NFTs
-  - IPFS and the WWW
-    - client-Server vs peer to peer
-    - Trust
-      - TLS: Certificates & encryption
-      - Self verifiability
-- Fetching data from IPFS
-  - Low level vs high-level cloud services
-    - Server, linux, nginx vs AWS S3/Cloudfront
-    - IPFS Node vs Gateway
-  - Fetching data from the network
-    - How to use IPFS gateways
-    - Public gateways
-  - Resolution styles -->
-
-The Interplanetary File System (IPFS) is a peer-to-peer protocol for storing and accessing files and websites. As a distributed **peer-to-peer** protocol, it's fundamentally different from the HTTP protocol that forms the foundation for the internet.
-
-<!-- Because files are at the heart of the internet and the internet is at the heart of everything, the potential use cases for IPFS are endless. -->
-
-IPFS is a relatively new protocol compared to the time-honored HTTP protocol and isn't feasible for use in every scenario. The good news is that with the help of IPFS HTTP gateways, you can tap into the IPFS network directly from any browser.
-
-This blog post will give an overview of the core concepts of the IPFS protocol, discuss the relationship between IPFS and HTTP(S), the role of IPFS gateways, and how you can improve the CID access performance and reliability from the IPFS network using HTTP.
-
-If you're already familiar with the concepts of IPFS and would like to learn how to use IPFS gateways feel free to skip ahead to the [practical example](#TODO) section.
+If you're already familiar with the core concepts of IPFS and are interested in the practical guide for using IPFS gateways, stay tuned for part two of the blog series.
 
 > Note: The blog post uses HTTP to refer to both HTTP and HTTPS for brevity and assumes that HTTPS should be used in every production application.
 
@@ -70,11 +32,25 @@ When the servers are down or unreachable, you won’t be able to access the imag
 
 Moreover, the HTTP protocol does not specify a way to **ask other servers** for the image; so the file is only available as long as the origin server hosts it.
 
-> Note: In reality most websites are deployed to multiple servers that are load balanced to ensure high availability of content on one of the big cloud providers. The problem is that these high availability solutions are not standardised as part of the HTTP protocol and are opaque to clients. Moreover, the market concentration with big cloud proivder like AWS, an outage can affect thousands of [sites and services](https://www.reuters.com/markets/commodities/amazons-prime-ring-other-apps-down-thousands-users-2021-12-07/).
+## What about the big clouds?
+
+So why not just use one of the big cloud providers, like AWS, GCP, Azure, and the like?
+
+Plenty of websites, apps, and platforms are deployed to these clouds which provide redundancy and high availability by deploying to multiple servers and abstracting the details for you.
+
+The problem is that many of the proprietary high-level abstractions (CDNs and storage services) offered by cloud providers are neither open-source nor standardized. This creates vendor lock-in, making it hard for customers to move from one cloud service to another.
+
+Another challenge is that high-level cloud solutions are not implemented on the protocol layer, thereby creating walled gardens – lacking any form of **interoperability** (even across different cloud providers).
+
+Moreover, the market concentration of the big cloud means that an outage can have an immense blast radius, affecting thousands of [sites](https://www.reuters.com/technology/google-amazon-several-other-websites-down-2021-11-16/) and [services](https://www.reuters.com/markets/commodities/amazons-prime-ring-other-apps-down-thousands-users-2021-12-07/); in some cases due to [human error](https://www.datacenterdynamics.com/en/news/microsoft-confirms-azure-outage-was-human-error/).
+
+In reality, the big clouds offer convenience at the cost of resilience and interoperability. They allow you to think in terms of the client-server model assuming that the servers are always available, while in reality abstracting the details and complexity of how they achieve redundancy.
+
+This is where peer-to-peer networking comes in.
 
 ## From client-server to peer-to-peer with IPFS
 
-One of the core characteristics of the IPFS is that it is a peer-to-peer network. In contrast to the client-server model where you typically have many clients consuming from a single server, with the peer-to-peer model, every computer (typically referred to as a _peer_) in the IPFS network wears both the hat of a server and a client. This means that every IPFS peer can become a productive member of the network.
+One of the core characteristics of the IPFS is that it is a _peer-to-peer_ network. In contrast to the client-server model where you typically have many clients consuming from a single server, with the peer-to-peer model, every computer (typically referred to as a _peer_) in the IPFS network wears both the hat of a server and a client. This means that every IPFS peer can become a productive member of the network.
 
 ![client-server compared with peer-to-peer](./http-vs-ipfs.png)
 
@@ -128,7 +104,7 @@ So how do you use IPFS to access files in real-world applications?
 
 There are two prominent ways to fetch files stored in the IPFS network:
 
-- Running an IPFS node by installing one of the IPFS implementations as a daemon (long-running process) on your computer or on a server in the cloud. The node becomes a member of the IPFS peer-to-peer network and announces what data it’s holding and responds to requests for data.
+- Running an IPFS node by installing one of the IPFS implementations as a daemon (long-running process) on your computer or a server in the cloud. The node becomes a member of the IPFS peer-to-peer network and announces what data it’s holding and responds to requests for data.
 - Using an **IPFS Gateway** which allows fetching CIDs using the HTTP protocol.
 
 The first option allows you to _speak the native IPFS protocol_ while the latter serves as a bridge in situations where you might be constrained to using HTTP. Choosing the right approach depends on your use case.
@@ -137,141 +113,33 @@ The first option allows you to _speak the native IPFS protocol_ while the latter
 
 IPFS gateways are public services that translate between _Web2_ and _Web3_ thereby providing a bridge between HTTP and IPFS.
 
-They allow you to use the HTTP protocol –which almost every programming language is capable of– to request a CID from the IPFS network, fetch it, and use HTTP to send the data back.
+They allow you to use the HTTP protocol –which almost every programming language is capable of– to request a CID from the IPFS network.
+
+You request content from an IPFS gateway by passing a CID in the HTTP request. Since CIDs are a hash of specific data, if the data is provided by a node on the network and accessible by the gateway, the gateway can get that specific data from the network no matter where it sits.
 
 In its simplest form, a gateway is an IPFS node that also accepts HTTP requests for CIDs in addition to speaking the IPFS protocol to participate in the peer-to-peer network. Most IPFS implementations can also work as a gateway.
 
-![Some IPFS nodes can also be a gateway](./browser-gateway.png)
+![Any supported IPFS nodes can also be a gateway](./browser-gateway.png)
 
-<!-- Some browsers such as Brave and [Opera](https://blogs.opera.com/tips-and-tricks/2021/02/opera-crypto-files-for-keeps-ipfs-unstoppable-domains/) and introducing new protocols to browsers can be a lengthy process. This is where IPFS Gateways come in handy. -->
+### Example
 
-## How to use IPFS gateways
+To get a sense of using an IPFS gateway, try opening the following gateway links with the CID of the image of Astronaut Jessica Watkins:
+https://ipfs.io/ipfs/bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm
+https://cloudflare-ipfs.com/ipfs/bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm
 
-To use an IPFS gateway, you need to know two things:
+As you might notice, these are two different gateways that are capable of fetching the same image using IPFS' core pillars: content addressing and peer-to-peer networking.
 
-- The CID (Content Identifier), e.g. `bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm`
-- The address of the IPFS gateway
-
-### Resolution style
-
-The **resolution style** refers to how you construct a URL for a given CID.
-
-Depending on your use case you can choose from one of two resolution styles.:
-
-- **Path resolution** where the CID is in the path portion of the gateway URL, e.g. https://ipfs.io/ipfs/bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm
-- **Subdomain resolution** where the CID is in the host portion of the URL, as a subdomain of the gateway host, e.g., https://bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm.ipfs.dweb.link
-
-Subdomain resolution is the recommended style for serving content over HTTP gateways, especially if you're using IPFS to host websites and applications. This is because web browsers provide security isolation on a per-domain basis (See [Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) for more).
-
-With the subdomain style, every CID subdomain gets its own "namespace" for things like cookies and local storage, which isolates things from other web content stored on IPFS.
-
-If a CID points to a directory listing as in the case of a website, you can use the path portion of the URL to specify the filename. For example, below is the URL for one of the images on the IPFS website:
-
-https://bafybeih42hd2kjcr7o2f72jinvwotlfn24hppwnfl34lku3665cyp4gipe.ipfs.dweb.link/images/command-line-hex.png
-
-If you remove the path, from the URL you will get the root of a recent version of the IPFS website (remember, CIDs are immutable so every change to the IPFS website creates a new CID)
-
-### Public gateways
-
-Public gateways as the name suggests are IPFS gateways that allow anyone to use HTTP to fetch CIDs from the IPFS network.
-
-You can find public gateway operators in the [public gateway checker](https://ipfs.github.io/public-gateway-checker/) and check whether they are online and the latency from your location.
-
-Beware that many of the public gateways are provided on a best-effort basis without any SLA. Follow along on how to ensure the reliable availability of your content.
-
-To demonstrate using a public gateway, open one of the URLs below of an image of Astronaut Jessica Watkins from the first example, which was originally hosted on the NASA servers and has been uploaded to the IPFS network, the corresponding CID for the image is `bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm`.
-
-- https://bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm.ipfs.infura-ipfs.io
-- https://bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm.ipfs.dweb.link
-- https://bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm.ipfs.cf-ipfs.com
-<!-- removed as it races - https://bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm.ipfs.nftstorage.link -->
-
-If you opened more than one of the gateway links, you may have noticed that they had different loading times. **This is because some gateways might not have the CID cached locally, so they have to ask the network and fetch the file from another IPFS node to serve your HTTP request.**
-
-This means if your CID isn't well replicated in the IPFS network, fetching a CID from a gateway can take anywhere between milliseconds to the order of tens of seconds – obviously suboptimal if you're building an app that requires fast loading times.
-
-In the next part, you will learn about some approaches to improve CID request latency and ensure reliable access to your CIDs when using IPFS gateways.
-
-## Improving performance and reliability when fetching CIDs from IPFS
-
-Given the decentralized nature of IPFS, improving the reliability and request latency of your CIDs through an IPFS gateway depends on many factors:
-
-- Whether the IPFS gateway has the CID cached.
-- Which gateway you are requesting the CID from?
-- The amount of traffic and load on the IPFS gateway
-- The number of IPFS nodes **pinning** the CID.
-- Is there a [CDN](https://en.wikipedia.org/wiki/Content_delivery_network) in front of the IPFS gateway?
-- The network distance (round-trip time) between the requester and the IPFS gateway.
-- [HTTP Cache](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching) headers
-
-Taking all these into consideration makes it hard to give generic advice. Nonetheless, understanding the factors influencing the performance can help you navigate the space of potential solutions.
-
-Some are these factors are within your control. The section below will cover some concrete tips you can take to improve performance and reliability. But first, let's go into the subtle differences between pinning.
-
-### Caching vs. pinning
-
-As mentioned earlier, an IPFS gateway in its simplest form is an IPFS node with its HTTP gateway port open. When you request a CID, it will be returned quickly if the IPFS node has the CID cached or pinned. If not, it has to search the network.
-
-Existing IPFS [implementations](https://ipfs.io/#install) have a fairly aggressive caching mechanism that will keep an object local for a short time after the node has fetched it from the network, but these objects may get garbage-collected regularly, especially when a public gateway is used.
-
-Pinning is the mechanism that allows you to tell IPFS to **always** store a given CID — by the default on your local node. In addition to local pinning, you can also pin your CIDs to [remote pinning services](https://docs.ipfs.io/how-to/work-with-pinning-services/).
-
-In other words, caching is the mechanism by which CID is kept around on the node for a short period until garbage-collected while pinning is a deliberate choice you make to keep the CID stored on the node.
-
-This is why requesting a CID for the first time from a gateway can take time while subsequent requests are typically faster.
-
-### Tip 1: Pin your CIDs to multiple IPFS nodes
-
-Drawing on the principles laid out above, it's sensible to pin your CIDs to multiple IPFS nodes to ensure reliable availability and fast fetching. These can be either IPFS nodes that you are operating or pinning services like [Web3.storage](https://web3.storage/), [Pinata](https://www.pinata.cloud/), and [Infura](https://infura.io/product/ipfs).
-
-To make pinning easier, there's a vendor-agnostic [Pinning Service OpenAPI Specification](https://ipfs.github.io/pinning-services-api-spec/) that is [already supported by many IPFS node implementations, client libraries, and existing pinning services](https://github.com/ipfs/pinning-services-api-spec#adoption). Using this remote pinning API, you can [implement pinning to multiple services](https://docs.ipfs.io/how-to/work-with-pinning-services/#use-an-existing-pinning-service) as part of your workflow for uploading immutable data to IPFS.
-
-Note that pinning is not the same as adding the CID to the IPFS network. For pinning to work, the CID has to first be added to a reachable IPFS node connected to the network so that the pinning services can replicate the CID. As a convenience, most of the pinning services also offer an API for uploading a file that returns the CID.
-
-If you're not running an IPFS node, you can start by uploading a file to one service and then using the returned CID to pin it to other services.
-
-### Tip 2: Use a custom domain that you control as your IPFS gateway
-
-Imagine the following scenario: you deploy your web app to IPFS which contains media with absolute URLs to a public gateway experiencing an outage. For example, your web app displays the image with an absolute path to the CID: https://bafybeibml5uieyxa5tufngvg7fgwbkwvlsuntwbxgtskoqynbt7wlchmfm.ipfs.infura-ipfs.io.
-
-You may be able to reach your app using a different gateway, but since the web app's content is immutable, the image pointing to the Infura IPFS gateway which is down will not load.
-
-Also, you may also want to only host specific CIDs, such as data uploaded by your users, deny serving HTML websites, or block fetching any third party content in general.
-
-For these reasons, it's sensible to use a domain within your control to route HTTP traffic to a gateway. This approach potentially gives you the flexibility to implement additional performance optimizations.
-
-Practically speaking, this can be implemented using several approaches depending on your willingness to run infrastructure:
-
-- Point a domain you control, e.g., `*.ipfs.yourdomain.io` point to a reverse proxy like nginx which will proxy requests to a public gateway, allowing you to switch public gateways if there's downtime.
-- Use [Cloudflare workers](https://workers.cloudflare.com/) to implement a smart proxy that races a request across multiple gateways. This is the approach taken by the [NFT.storage gateway](https://nft.storage/docs/concepts/gateways/#architecture) for which you can find the [source code on GitHub](https://github.com/nftstorage/nftstorage.link/tree/main/packages/edge-gateway#high-level-architecture).
-
-
-
-<!-- ### Tip 3: Make use of the  and etag headers -->
-
-### Tips if you're running your own HTTP gateway
-
-- Set up [peering](https://github.com/ipfs/go-ipfs/blob/master/docs/config.md#peering) with the pinning services that store your data
-- Ensure that you are correctly returning HTTP cache headers to the client if the node is behind a reverse-proxy
-- Put a CDN like Cloudflare in front to reduce load on the IPFS node
-
-
-<!-- Caching plays a big role in gateway performance. I think some of the pinning service providers offer caching as a paid service, but I can’t recall the exact latest details.
-
-Example: NFT.storage has a new gateway that improves retrieval performance: nftstorage.link. This gateway “races” 3 public gateways (Pinata, Cloudflare, and ipfs.io) and also caches the majority of NFTs (>70% of them).
-Individually, each gateway takes ~500ms-1.5s. Combining the racing + caching, overall performance on the NFTStorage gateway ends up being ~200ms.
-More info:
-https://nft.storage/blog/post/2022-03-08-gateway-release/
-https://nft.storage/docs/concepts/gateways/#the-nftstorage-gateway
-This is not helpful for the specific pathway you’re investigating (local node > public gateway), alas. But it is probably helpful in thinking about overall tradeoffs. (edited)
- -->
-<!--
-### considerations for apps
-
-- Loading time can vary depending on availability.
-
-> Lidel: where performance matters, add logic that "prewarms" HTTP CDNs/cache, and make sure etag and cache-control headers returned by http gateway are not lost. when go-ipfs 0.13 or later is used, leverage `X-Ipfs-Roots` header for even smarter HTTP cache invalidation. -->
+This example only scratches the surface, leaving out many important details. The reality of using IPFS gateways is a nuanced topic that involves a space of trade-offs and details worth considering when developing applications.
 
 ## Summary
 
-TODO
+In this blog post, you learned about the challenges of the client-server model, the principles behind IPFS, namely peer-to-peer networking and content addressing, and how IPFS gateways provide a bridge between Web2 and Web3, allowing you to tap into the IPFS network using HTTP.
+
+In the follow-up blog post, you will learn more about all the tips and tricks for using IPFS gateways in real-world applications, going into resolution styles, integration with DNS, caching, pinning, debugging, and more.
+
+If you're interested in:
+
+- Diving deeper, check out the [IPFS docs](https://docs.ipfs.io/)
+- Running an IPFS node, [install IPFS](https://docs.ipfs.io/install/)
+- Ask questions, join us in [the IPFS forum](https://discuss.ipfs.io/)
+- Chat with us, join us on [Discord](https://discord.com/invite/KKucsCpZmY)
